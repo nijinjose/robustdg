@@ -142,6 +142,7 @@ if args.method_name == 'matchdg_ctr' and args.test_metric == 'acc':
     raise ValueError('Match DG during the contrastive learning phase cannot be evaluted for test accuracy metric')
     sys.exit()
 
+args.perfect_match=1
 if args.perfect_match == 0 and args.test_metric == 'match_score':
     raise ValueError('Cannot evalute match function metrics when perfect match is not known')
     sys.exit()

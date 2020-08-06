@@ -19,7 +19,16 @@ class MnistRotated(BaseDataLoader):
         self.mnist_subset = mnist_subset
         self.download = download
         
+        if self.data_case== 'train':
+#             self.training_list_size= [2000, 1800, 1500, 500, 200]
+            self.training_list_size= [2000, 2000, 2000, 2000, 2000]
+        elif self.data_case== 'val':
+            self.training_list_size= [100, 100, 100, 100, 100]        
+        elif self.data_case== 'test':
+            self.training_list_size= [2000, 2000]
+            
         self.train_data, self.train_labels, self.train_domain, self.train_indices = self._get_data()
+        
 
     def load_inds(self):
         data_dir= self.root + '/' + self.args.dataset_name + '_' + self.args.model_name + '_indices'
@@ -87,9 +96,11 @@ class MnistRotated(BaseDataLoader):
                 indices_dict[key]=[]
             indices_dict[key].append( i )
         
+        d_idx=0
         for domain in self.list_train_domains:
             # Run transforms
-            mnist_img_rot= torch.zeros((mnist_size, self.args.img_w, self.args.img_h))
+            print(domain, self.training_list_size[d_idx])
+            mnist_img_rot= torch.zeros((self.training_list_size[d_idx], self.args.img_w, self.args.img_h))
             mnist_idx=[]
             
             # Shuffling the images to create random across domains
@@ -97,7 +108,7 @@ class MnistRotated(BaseDataLoader):
             for key in curr_indices_dict.keys():
                 random.shuffle( curr_indices_dict[key] )
             
-            for i in range(len(mnist_imgs)):
+            for i in range(self.training_list_size[d_idx]):
                 if domain == '0':
                     mnist_img_rot[i]= to_tensor(to_pil(mnist_imgs[i]))
                 else:
@@ -113,9 +124,10 @@ class MnistRotated(BaseDataLoader):
 
             print('Source Domain ', domain)
             training_list_img.append(mnist_img_rot)
-            training_list_labels.append(mnist_labels)
+            training_list_labels.append(mnist_labels[:self.training_list_size[d_idx]])
             training_list_idx.append(mnist_idx)
-            training_list_size.append(mnist_img_rot.shape[0])
+            #training_list_size.append(mnist_img_rot.shape[0])
+            d_idx+=1
              
         # Making domain size equivalent everywhere by random sampling
         if self.data_case == 'train':
@@ -136,16 +148,20 @@ class MnistRotated(BaseDataLoader):
         train_imgs = torch.cat(training_list_img)
         train_labels = torch.cat(training_list_labels)
         train_indices = np.array(training_list_idx)
-        train_indices = np.reshape( train_indices, ( train_indices.shape[0]*train_indices.shape[1] ) )    
-        self.training_list_size= training_list_size
+        train_indices= np.hstack(train_indices)        
+        #train_indices = np.reshape( train_indices, ( train_indices.shape[0]*train_indices.shape[1] ) )    
+#         self.training_list_size= training_list_size
         print(train_imgs.shape, train_labels.shape, train_indices.shape)
         print(self.training_list_size)
         
         # Create domain labels
         train_domains = torch.zeros(train_labels.size())
+        domain_start=0
         for idx in range(len(self.list_train_domains)):
-            train_domains[idx * mnist_size: (idx+1) * mnist_size] += idx
-
+            curr_domain_size= self.training_list_size[idx]
+            train_domains[ domain_start: domain_start+ curr_domain_size ] += idx
+            domain_start+= curr_domain_size
+            
         # Shuffle everything one more time
         inds = np.arange(train_labels.size()[0])
         np.random.shuffle(inds)
