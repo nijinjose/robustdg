@@ -33,9 +33,9 @@ parser.add_argument('--method_name', type=str, default='erm_match',
                     help=' Training Algorithm: erm_match; matchdg_ctr; matchdg_erm')
 parser.add_argument('--model_name', type=str, default='resnet18', 
                     help='Architecture of the model to be trained')
-parser.add_argument('--train_domains', type=int, default=["15", "30", "45", "60", "75"], 
+parser.add_argument('--train_domains', nargs='+', type=str, default=["15", "30", "45", "60", "75"], 
                     help='List of train domains')
-parser.add_argument('--test_domains', type=int, default=["0", "90"], 
+parser.add_argument('--test_domains', nargs='+', type=str, default=["0", "90"], 
                     help='List of test domains')
 parser.add_argument('--out_classes', type=int, default=10, 
                     help='Total number of classes in the dataset')
@@ -156,7 +156,7 @@ for run in range(args.n_runs):
         torch.cuda.manual_seed_all(run*10)    
     
     #DataLoader        
-    train_dataset, val_dataset, test_dataset, total_domains, domain_size, training_list_size= get_dataloader( args, run, train_domains, test_domains, kwargs )
+    train_dataset, val_dataset, test_dataset, total_domains, domain_size, training_list_size= get_dataloader( args, run+3, train_domains, test_domains, kwargs )
     print('Train Domains, Domain Size, BaseDomainIdx, Total Domains: ', train_domains, total_domains, domain_size, training_list_size)
     
     #Import the testing module

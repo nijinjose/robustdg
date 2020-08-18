@@ -19,13 +19,16 @@ class MnistRotated(BaseDataLoader):
         self.mnist_subset = mnist_subset
         self.download = download
         
+        freq_ratio=10
+        domain_size=2000        
         if self.data_case== 'train':
+            self.training_list_size= [domain_size, int(domain_size/freq_ratio)]
 #             self.training_list_size= [2000, 1800, 1500, 500, 200]
-            self.training_list_size= [2000, 2000, 2000, 2000, 2000]
+#             self.training_list_size= [2000, 2000, 2000, 2000, 2000]
         elif self.data_case== 'val':
-            self.training_list_size= [100, 100, 100, 100, 100]        
+            self.training_list_size= [int(domain_size/4), int(domain_size/(4*freq_ratio))]
         elif self.data_case== 'test':
-            self.training_list_size= [2000, 2000]
+            self.training_list_size= [domain_size, domain_size]
             
         self.train_data, self.train_labels, self.train_domain, self.train_indices = self._get_data()
         
@@ -74,7 +77,7 @@ class MnistRotated(BaseDataLoader):
         
         to_augment= transforms.Compose([
                 transforms.RandomResizedCrop(self.args.img_w, scale=(0.7,1.0)),
-                transforms.RandomHorizontalFlip(),            
+#                 transforms.RandomHorizontalFlip(),            
             ])
         
         to_tensor=  transforms.Compose([

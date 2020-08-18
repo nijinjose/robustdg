@@ -18,9 +18,9 @@ from .algo import BaseAlgo
 from utils.helper import l1_dist, l2_dist, embedding_dist, cosine_similarity
 
 class Erm(BaseAlgo):
-    def __init__(self, args, train_dataset, test_dataset, train_domains, total_domains, domain_size, training_list_size, base_res_dir, post_string, cuda):
+    def __init__(self, args, train_dataset, val_dataset, test_dataset, train_domains, total_domains, domain_size, training_list_size, base_res_dir, post_string, cuda):
         
-        super().__init__(args, train_dataset, test_dataset, train_domains, total_domains, domain_size, training_list_size, base_res_dir, post_string, cuda) 
+        super().__init__(args, train_dataset, val_dataset, test_dataset, train_domains, total_domains, domain_size, training_list_size, base_res_dir, post_string, cuda) 
               
     def train(self):
         
@@ -72,8 +72,13 @@ class Erm(BaseAlgo):
             print('Train Acc Env : ', 100*train_acc/train_size )
             print('Done Training for epoch: ', epoch)
             
+            #Val Dataset Accuracy
+            acc_macro, acc_per_domain= self.get_test_accuracy('val')
+            self.val_acc.append( [acc_macro, acc_per_domain] )
+            
             #Test Dataset Accuracy
-            self.final_acc.append( self.get_test_accuracy() )
+            acc_macro, acc_per_domain= self.get_test_accuracy('test')
+            self.final_acc.append( [acc_macro, acc_per_domain] )
 
         # Save the model's weights post training
         self.save_model()

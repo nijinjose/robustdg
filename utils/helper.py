@@ -144,8 +144,8 @@ def get_dataloader(args, run, train_domains, test_domains, kwargs):
         test_data_obj= PACS(test_domains, '/pacs/train_val_splits/', data_case='test')
     elif args.dataset_name in ['rot_mnist', 'fashion_mnist']:
         train_data_obj=  MnistRotated(args, train_domains, run, 'data/rot_mnist', data_case='train')
-        val_data_obj=  MnistRotated(args, train_domains, run, 'data/rot_mnist', data_case='val')       
-        test_data_obj=  MnistRotated(args, test_domains, run, 'data/rot_mnist', data_case='test')
+        val_data_obj=  MnistRotated(args, train_domains, run+3, 'data/rot_mnist', data_case='val') 
+        test_data_obj=  MnistRotated(args, test_domains, run+4, 'data/rot_mnist', data_case='test')
 
     # Load supervised training
     train_dataset = data_utils.DataLoader(train_data_obj, batch_size=args.batch_size, shuffle=True, **kwargs )

@@ -29,9 +29,9 @@ parser.add_argument('--method_name', type=str, default='erm_match',
                     help=' Training Algorithm: erm_match; matchdg_ctr; matchdg_erm')
 parser.add_argument('--model_name', type=str, default='resnet18', 
                     help='Architecture of the model to be trained')
-parser.add_argument('--train_domains', type=int, default=["15", "30", "45", "60", "75"], 
+parser.add_argument('--train_domains', nargs='+', type=str, default=["15", "30", "45", "60", "75"], 
                     help='List of train domains')
-parser.add_argument('--test_domains', type=int, default=["0", "90"], 
+parser.add_argument('--test_domains', nargs='+', type=str, default=["0", "90"], 
                     help='List of test domains')
 parser.add_argument('--out_classes', type=int, default=10, 
                     help='Total number of classes in the dataset')
@@ -113,7 +113,15 @@ train_domains= args.train_domains
 test_domains= args.test_domains
 
 #Initialize
+final_val_accuracy=[]
 final_report_accuracy=[]
+val_per_domain={}
+test_per_domain={}
+
+for idx in range(len(args.train_domains)):
+    val_per_domain[idx]=[]
+    test_per_domain[idx]=[]
+
 base_res_dir=(
                 "results/" + args.dataset_name + '/' + args.method_name + '/' + args.match_layer 
                 + '/' + 'train_' + str(args.train_domains) + '_test_' + str(args.test_domains) 
@@ -137,7 +145,7 @@ for run in range(args.n_runs):
     if args.method_name == 'erm_match':
         from algorithms.erm_match import ErmMatch    
         train_method= ErmMatch(
-                                args, train_dataset, 
+                                args, train_dataset, val_dataset, 
                                 test_dataset, train_domains, 
                                 total_domains, domain_size, 
                                 training_list_size, base_res_dir, 
@@ -166,7 +174,16 @@ for run in range(args.n_runs):
     elif args.method_name == 'erm':
         from algorithms.erm import Erm    
         train_method= Erm(
-                                args, train_dataset, 
+                                args, train_dataset, val_dataset, 
+                                test_dataset, train_domains, 
+                                total_domains, domain_size, 
+                                training_list_size, base_res_dir, 
+                                run, cuda
+                              )
+    elif args.method_name == 'dro':
+        from algorithms.dro import DRO    
+        train_method= DRO(
+                                args, train_dataset, val_dataset, 
                                 test_dataset, train_domains, 
                                 total_domains, domain_size, 
                                 training_list_size, base_res_dir, 
@@ -179,11 +196,28 @@ for run in range(args.n_runs):
             
     # Final Report Accuacy
     if args.method_name != 'matchdg_ctr':
-        final_acc= train_method.final_acc[-1]
+        
+        final_acc= train_method.val_acc[-1][0]
+        final_val_accuracy.append( final_acc )
+        
+        final_acc= train_method.final_acc[-1][0]
         final_report_accuracy.append( final_acc )
-                   
+        
+        for idx in range(len(args.train_domains)):
+            val_per_domain[idx].append( train_method.val_acc[-1][1][idx] )
+            test_per_domain[idx].append( train_method.final_acc[-1][1][idx] )        
+
 if args.method_name != 'matchdg_ctr':
     print('\n')
     print('Done for the Model..')
+    print('Final Val Accuracy', np.mean(final_val_accuracy), np.std(final_val_accuracy) )
     print('Final Test Accuracy', np.mean(final_report_accuracy), np.std(final_report_accuracy) )
     print('\n')
+    
+    for idx in range(len(args.train_domains)):
+        val_per_domain[idx]= np.array(val_per_domain[idx])
+        test_per_domain[idx]= np.array(test_per_domain[idx])
+        
+    for idx in range(len(args.train_domains)):
+        print(' Domain Accuracy ', idx, ' Val ', np.mean(val_per_domain[idx]),  np.std(val_per_domain[idx]) )
+        print(' Domain Accuracy ', idx, ' Test ', np.mean(test_per_domain[idx]),  np.std(test_per_domain[idx]) )
