@@ -115,7 +115,7 @@ class BaseEval():
     
     def load_model(self, run_matchdg_erm):
         
-        if self.args.method_name in ['erm_match', 'csd', 'irm', 'perf_match']:
+        if self.args.method_name in ['erm_match', 'csd', 'irm', 'perf_match', 'rand_match']:
             self.save_path= self.base_res_dir + '/Model_' + self.post_string
                 
         elif self.args.method_name == 'matchdg_ctr':
@@ -222,7 +222,6 @@ class BaseEval():
             with torch.no_grad():
                 x_e= x_e.to(self.cuda)
                 y_e= torch.argmax(y_e, dim=1).to(self.cuda)
-                d_e = torch.argmax(d_e, dim=1).numpy()       
 
                 #Forward Pass
                 out= self.forward(x_e)                

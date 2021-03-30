@@ -182,7 +182,7 @@ for run in range(args.n_runs):
     train_dataset= torch.empty(0)
     val_dataset= torch.empty(0)
     test_dataset= torch.empty(0)
-    if args.test_metric == 'match_score':
+    if args.test_metric in ['match_score', 'feat_eval']:
         if args.match_func_data_case== 'train':
             train_dataset= get_dataloader( args, run, train_domains, 'train', 1, kwargs )
         elif args.match_func_data_case== 'val':
@@ -222,6 +222,14 @@ for run in range(args.n_runs):
                                run, cuda
                               )   
 
+    elif args.test_metric == 'feat_eval':
+        from evaluation.feat_eval import FeatEval
+        test_method= FeatEval(
+                               args, train_dataset, val_dataset,
+                               test_dataset, base_res_dir, 
+                               run, cuda
+                              )   
+        
     elif args.test_metric == 't_sne':
         from evaluation.t_sne import TSNE
         test_method= TSNE(

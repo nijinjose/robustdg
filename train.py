@@ -176,13 +176,20 @@ for run in range(args.n_runs):
                                 test_dataset, base_res_dir, 
                                 run, cuda
                               )
-    if args.method_name == 'perf_match':
+    elif args.method_name == 'perf_match':
         from algorithms.perf_match import PerfMatch    
         train_method= PerfMatch(
                                 args, train_dataset, val_dataset,
                                 test_dataset, base_res_dir, 
                                 run, cuda
                               )        
+    elif args.method_name == 'rand_match':
+        from algorithms.rand_match import RandMatch    
+        train_method= RandMatch(
+                                args, train_dataset, val_dataset,
+                                test_dataset, base_res_dir, 
+                                run, cuda
+                              )
     elif args.method_name == 'matchdg_ctr':
         from algorithms.match_dg import MatchDG
         ctr_phase=1

@@ -41,7 +41,7 @@ class SlabData(BaseDataLoader):
             
         elif self.data_case == 'test':        
             self.domain_size = [self.base_size]
-            self.spur_probs= [1.0]
+            self.spur_probs= [ float(domain) for domain in list_train_domains ]
         
         print('\n')
         print('Data Case: ', self.data_case)
